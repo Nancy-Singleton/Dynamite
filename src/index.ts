@@ -3,17 +3,17 @@ import {GameState} from "./types/gameState";
 import {Move} from "./types/move";
 
 class MyBot implements Bot {
-    roundCounter: number = 0;
-    dynamiteRemaining: number = 100;
-    opponentsRockCount: number = 0;
-    opponentsPaperCount: number = 0;
-    opponentsScissorsCount: number = 0;
+    private roundCounter: number = 0;
+    private dynamiteRemaining: number = 100;
+    private opponentsRockCount: number = 0;
+    private opponentsPaperCount: number = 0;
+    private opponentsScissorsCount: number = 0;
 
     makeMove(gamestate: GameState): Move {
         this.roundCounter++;
         this.storeOpponentsLastMove(gamestate);
 
-        let opponentPlayingConsistently = this.opponentPlayingConsistently(gamestate, 85);
+        const opponentPlayingConsistently = this.opponentPlayingConsistently(gamestate, 85);
         if (!!opponentPlayingConsistently) {
             return this.beat(opponentPlayingConsistently);
         }
@@ -26,7 +26,7 @@ class MyBot implements Bot {
         return this.chooseRandomlyFrom(['R', 'P', 'S']);
     }
 
-    storeOpponentsLastMove(gameState: GameState) {
+    private storeOpponentsLastMove(gameState: GameState) {
         if (this.roundCounter > 1) {
             const lastMove = gameState.rounds[this.roundCounter - 2].p2;
             if (lastMove === 'R') {
@@ -41,7 +41,7 @@ class MyBot implements Bot {
         }
     }
 
-    opponentPlayingConsistently(gameState: GameState, percentage: number): Move | undefined {
+    private opponentPlayingConsistently(gameState: GameState, percentage: number): Move | undefined {
         if (this.opponentsRockCount * 100 / (this.roundCounter - 1) > percentage) {
             return 'R';
         }
@@ -54,7 +54,7 @@ class MyBot implements Bot {
         return undefined;
     }
 
-    beat(move: Move) {
+    private beat(move: Move) {
         if (move === 'R') {
             return 'P'
         }
@@ -70,12 +70,12 @@ class MyBot implements Bot {
         return this.chooseRandomlyFrom(['R', 'P', 'S']);
     }
 
-    chooseRandomlyFrom(moves: Move[]): Move {
+    private chooseRandomlyFrom(moves: Move[]): Move {
         const choice = Math.floor((Math.random() * moves.length));
         return moves[choice];
     }
 
-    useDynamiteWithProbability(probability: number): boolean {
+    private useDynamiteWithProbability(probability: number): boolean {
         const choice = Math.floor((Math.random() * probability));
         return choice === 0;
     }
