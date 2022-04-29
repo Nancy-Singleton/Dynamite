@@ -18,10 +18,11 @@ class MyBot implements Bot {
             return this.beat(opponentPlayingConsistently);
         }
 
-        if (this.dynamiteRemaining > 0 && this.useDynamiteWithProbability(2)) {
+        if (this.dynamiteRemaining > 0 && this.useDynamiteWithProbability(5)) {
             this.dynamiteRemaining--;
             return 'D';
         }
+
         return this.chooseRandomlyFrom(['R', 'P', 'S']);
     }
 
