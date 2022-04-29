@@ -8,19 +8,21 @@ class MyBot implements Bot {
     private opponentsRockCount: number = 0;
     private opponentsPaperCount: number = 0;
     private opponentsScissorsCount: number = 0;
+    private opponentsDynamiteCount: number = 0;
+    private tieStreak: number = 0;
 
     makeMove(gamestate: GameState): Move {
         this.roundCounter++;
         this.storeOpponentsLastMove(gamestate);
+        this.updateTieStreak(gamestate);
 
-        const opponentPlayingConsistently = this.opponentPlayingConsistently(gamestate, 85);
+        const opponentPlayingConsistently = this.opponentPlayingConsistently(85);
         if (!!opponentPlayingConsistently) {
             return this.beat(opponentPlayingConsistently);
         }
 
-        if (this.dynamiteRemaining > 0 && this.useDynamiteWithProbability(5)) {
-            this.dynamiteRemaining--;
-            return 'D';
+        if (this.tieStreak > 1) {
+            return this.handleDraw();
         }
 
         return this.chooseRandomlyFrom(['R', 'P', 'S']);
@@ -38,10 +40,24 @@ class MyBot implements Bot {
             if (lastMove === 'S') {
                 this.opponentsScissorsCount++;
             }
+            if (lastMove === 'D') {
+                this.opponentsDynamiteCount++;
+            }
         }
     }
 
-    private opponentPlayingConsistently(gameState: GameState, percentage: number): Move | undefined {
+    private updateTieStreak(gameState: GameState) {
+        if (this.roundCounter > 1) {
+            const lastRound = gameState.rounds[this.roundCounter - 2];
+            if (lastRound.p1 === lastRound.p2) {
+                this.tieStreak++;
+            } else {
+                this.tieStreak = 0;
+            }
+        }
+    }
+
+    private opponentPlayingConsistently(percentage: number): Move | undefined {
         if (this.opponentsRockCount * 100 / (this.roundCounter - 1) > percentage) {
             return 'R';
         }
@@ -70,12 +86,26 @@ class MyBot implements Bot {
         return this.chooseRandomlyFrom(['R', 'P', 'S']);
     }
 
+    private handleDraw(): Move {
+
+        if (this.opponentsDynamiteCount < 100 && this.tieStreak >= 2) {
+            return 'W';
+        }
+
+        if (this.dynamiteRemaining > 0 && this.useWithProbability(2)) {
+            this.dynamiteRemaining--;
+            return 'D';
+        }
+
+        return this.chooseRandomlyFrom(['R', 'P', 'S']);
+    }
+
     private chooseRandomlyFrom(moves: Move[]): Move {
         const choice = Math.floor((Math.random() * moves.length));
         return moves[choice];
     }
 
-    private useDynamiteWithProbability(probability: number): boolean {
+    private useWithProbability(probability: number): boolean {
         const choice = Math.floor((Math.random() * probability));
         return choice === 0;
     }
